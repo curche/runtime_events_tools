@@ -1,4 +1,6 @@
 external is_process_alive : int -> bool = "olly_is_process_alive"
+external start_runtime_events : unit -> unit = "olly_start_runtime_events"
+external get_event_counts: unit -> (int * int) list = "olly_get_event_counts"
 
 let lost_events ring_id num =
   Printf.eprintf "[ring_id=%d] Lost %d events\n%!" ring_id num
@@ -194,7 +196,12 @@ let empty_config =
 
 let olly config exec_args =
   config.init ();
-  Fun.protect ~finally:config.cleanup (fun () ->
+  let cursor = start_runtime_events () in
+  Fun.protect ~finally:(fun () ->
+    config.cleanup ();
+    Runtime_events.pause ();
+    List.iter (fun (phase, count) -> Printf.printf "Runtime_phase: %d, Freq: %d\n" (phase) count) (get_event_counts cursor);
+  ) (fun () ->
       let runtime_config =
         {
           dir = config.runtime_events_dir;

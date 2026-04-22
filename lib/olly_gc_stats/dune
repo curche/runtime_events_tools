@@ -1,17 +1,8 @@
 (library
- (name olly_events_c)
-;  (public_name olly_events_c)
- (modules)
- (libraries runtime_events)
- (foreign_stubs
-  (names stubs)
-  (language c)))
-
-(library
  (name olly_gc_stats)
 ;  (public_name olly_gc_stats)
  (optional)
- (libraries olly_common hdr_histogram olly_events_c))
+ (libraries olly_common hdr_histogram))
 
 (rule
  (deps olly_gc_stats.5.0.ml)

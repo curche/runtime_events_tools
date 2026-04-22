@@ -1,6 +1,8 @@
 module H = Hdr_histogram
 module Ts = Runtime_events.Timestamp
 
+external get_event_counts: unit -> (int * int) list = "get_event_counts"
+
 type ts = { mutable start_time : float; mutable end_time : float }
 
 (* Maximum number of domains that can be active concurrently.
@@ -430,7 +432,10 @@ let gc_stats poll_sleep json output runtime_events_dir runtime_events_log_wsize
   in
 
   let init = Fun.id in
-  let cleanup () = print_percentiles json output hist in
+  let cleanup () = begin
+    print_percentiles json output hist;
+    List.iter (fun (phase, count) -> Printf.printf "Runtime_phase: %d, Freq: %d\n" (phase) count) (get_event_counts ())
+  end in
   let on_poll = Olly_common.Max_rss.sample rss_collector in
   let open Olly_common.Launch in
   try
